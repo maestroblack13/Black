@@ -60,6 +60,8 @@ body[data-s=speaking] .stage{--k:.45}
 #cs{font:400 14px 'Space Mono',monospace;letter-spacing:.18em;color:#a8f5f6;margin:-14px 0 14px}
 .btn{border:1px solid #8ef4f9;background:linear-gradient(110deg,#2cc9d9,#96f7f8);color:#06202a;min-width:170px;padding:13px 22px;font:700 14px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 0 25px #3bdfed44}
 body:not([data-s=idle]) .btn{border-color:#ffaf79;background:var(--orange);color:#26140c;box-shadow:0 0 25px #ff9b5840}
+.alt{margin-top:10px;background:none;border:1px solid #29505b;color:var(--cyan);padding:9px 16px;font:12px 'Space Mono',monospace;letter-spacing:.1em}
+.alt.on{border-color:var(--cyan);box-shadow:0 0 18px #3bdfed55}
 #heard{font:14px 'Space Mono',monospace;color:#80deea;min-height:20px;margin-top:16px}
 #ans{max-height:22vh;overflow:auto;font-size:16px;line-height:1.45;margin:8px 0 14px;max-width:560px}
 .send{display:flex;gap:8px;width:100%;max-width:520px}
@@ -118,6 +120,7 @@ canvas{width:100%;height:130px;display:block}
     </div>
     <div id="cs">SYSTÈME EN VEILLE</div>
     <button class="btn" id="btn">Parler</button>
+    <button class="alt" id="hfb">Mains libres : OFF</button>
     <div id="heard"></div>
     <div id="ans">Touchez le noyau ou « Parler », puis posez votre question.</div>
     <div class="send"><input id="txt" placeholder="Ou écrivez ici…" autocomplete="off"><button id="go">ENVOYER</button></div>
@@ -145,6 +148,7 @@ const L = { idle: "SYSTÈME EN VEILLE", listening: "J’ÉCOUTE…", thinking: "
 const H = { idle: "EN VEILLE", listening: "ÉCOUTE", thinking: "ANALYSE", speaking: "RÉPONSE" };
 const $ = id => document.getElementById(id);
 let state = "idle", hist = [], rec = null, tick = 0, battery = null;
+let hf = false, hfRec = null, wake = null;
 
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 function getKey(force) {
@@ -165,6 +169,7 @@ function setState(s) {
   $("cs").textContent = L[s]; $("hs").textContent = H[s];
   $("btn").textContent = s === "idle" ? "Parler" : "Arrêter";
   $("fq").textContent = ({ idle: 0, listening: 1.8, thinking: 4.2, speaking: 2.4 })[s].toFixed(1) + " Hz";
+  if (s !== "idle") stopHf(); else if (hf) setTimeout(hfStart, 500);
 }
 
 async function ask(t) {
@@ -213,6 +218,7 @@ async function think(t) {
 }
 
 function listen() {
+  stopHf();
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { $("ans").textContent = "Reconnaissance vocale indisponible : utilisez Chrome, ou écrivez en bas."; return; }
   if (!getKey()) return;
@@ -228,6 +234,40 @@ function listen() {
   rec.onend = () => { if (final) think(final); else if (state === "listening") setState("idle"); };
   rec.start();
 }
+async function lock(on) {
+  try { if (on) wake = await navigator.wakeLock.request("screen"); else if (wake) { await wake.release(); wake = null; } } catch (e) {}
+}
+function stopHf() {
+  if (hfRec) { hfRec.onend = null; hfRec.onerror = null; try { hfRec.abort(); } catch (e) {} hfRec = null; }
+}
+function hfStart() {
+  if (!hf || state !== "idle" || hfRec) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  const r = hfRec = new SR();
+  r.lang = "fr-FR"; r.interimResults = false;
+  r.onresult = e => onHeard(e.results[e.results.length - 1][0].transcript.trim());
+  r.onerror = ev => { if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { hfSet(false); add("Mains libres : micro refusé."); } };
+  r.onend = () => { if (hfRec === r) { hfRec = null; if (hf && state === "idle") setTimeout(hfStart, 300); } };
+  try { r.start(); } catch (e) {}
+}
+function onHeard(t) {
+  const m = t.match(/\b(black|block|blaque|blake)\b[\s,.:;!?-]*(.*)$/i);
+  if (!m) return;
+  const cmd = m[2].trim();
+  stopHf();
+  add("Mot d’activation détecté.");
+  if (cmd) think(cmd); else setTimeout(listen, 300);
+}
+function hfSet(on) {
+  hf = on;
+  $("hfb").textContent = "Mains libres : " + (on ? "ON" : "OFF");
+  $("hfb").classList.toggle("on", on);
+  lock(on);
+  if (on) { add("Dites « Black » pour m’appeler."); hfStart(); } else stopHf();
+}
+$("hfb").onclick = () => { if (!hf && !getKey()) return; hfSet(!hf); };
+
 function toggle() {
   if (state === "idle") listen();
   else { speechSynthesis.cancel(); if (rec) { rec.onend = null; rec.abort(); } setState("idle"); add("Interrompu."); }
