@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#03080e">
+<meta name="color-scheme" content="dark">
+<title>MAESTRO BLACK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--cyan:#60ebf5;--orange:#ff9b58;--muted:#849ba8}
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',system-ui,sans-serif;color:#e9f7f8;background:#03080e}
+.shell{min-height:100vh;position:relative;overflow:hidden;background:radial-gradient(ellipse at 51% 44%,#174454 0%,#0b202d 26%,#08141f 55%,#03080e 100%)}
+.shell:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.7;background-image:linear-gradient(#62eaf218 1px,transparent 1px),linear-gradient(90deg,#62eaf218 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse at center,#000 8%,transparent 86%);mask-image:radial-gradient(ellipse at center,#000 8%,transparent 86%)}
+.page{position:relative;z-index:1;max-width:1620px;margin:auto;padding:24px clamp(16px,3vw,48px) 30px}
+.mono{font-family:'Space Mono',monospace}
+.eyebrow{font:400 12px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{margin:6px 0 0;font-size:28px;letter-spacing:-.05rem;line-height:1}
+h2{margin:0;font-size:19px}
+.sub{color:#9ab5bf;font-size:14px;margin:10px 0 0}
+.rule{height:1px;background:linear-gradient(90deg,var(--cyan),#326371 42%,transparent);margin-bottom:22px}
+#clock{font:400 22px 'Space Mono',monospace;color:#bdfaff}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 12px var(--orange);margin-right:8px}
+body[data-s=listening] .dot,body[data-s=speaking] .dot{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+#cfg{background:none;border:1px solid #29505b;color:#9ab5bf;font:12px 'Space Mono',monospace;padding:6px 10px;margin-top:8px}
+.dash{display:grid;gap:20px;align-items:start;grid-template-columns:minmax(210px,1fr) minmax(380px,2.05fr) minmax(210px,1fr)}
+aside{display:grid;gap:20px}
+.panel{padding:20px;background:linear-gradient(145deg,#122630e8,#0a1822dc);border:1px solid #29505b;box-shadow:0 20px 45px #0004;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.top{border-bottom:1px solid #29434c;padding-bottom:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.top span{color:var(--orange)}
+.row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;color:#b9d2d9}
+.row output{font:12px 'Space Mono',monospace;color:#bdfaff}
+.bar{height:7px;border-radius:2px;background:#1d3540;overflow:hidden;margin-bottom:20px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#168f9f,var(--cyan));box-shadow:0 0 14px var(--cyan);transition:width 1s}
+.bar.o i{background:linear-gradient(90deg,#a75830,var(--orange));box-shadow:0 0 14px var(--orange)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cell{border:1px solid #305360;padding:12px}
+.cell p{margin:0 0 8px;color:var(--muted)}
+.cell b{font:400 12px 'Space Mono',monospace;color:#9aeef2}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center}
+.stage{--k:1;width:100%;min-height:440px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stage:before{content:"";position:absolute;width:min(93%,540px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#3feafa19 0%,#20b9d013 34%,transparent 69%);filter:blur(19px)}
+.orb{position:absolute;aspect-ratio:1;border-radius:50%;border:1px solid #4ce0eb45;box-shadow:0 0 35px #28e7f119,inset 0 0 36px #28e7f110;animation:spin calc(var(--d) * var(--k)) linear infinite}
+.o1{width:min(90%,430px);--d:36s;border-style:dashed}
+.o2{width:min(76%,360px);--d:13s;animation-direction:reverse;border:2px solid transparent;border-top-color:#65edfa;border-bottom-color:#4dbccd;filter:drop-shadow(0 0 9px #5de9f2)}
+.o3{width:min(61%,290px);--d:24s;border:1px dashed #5deefa70}
+.o4{width:min(47%,225px);--d:9s;border:3px solid transparent;border-left-color:var(--orange);border-right-color:#74e8f5}
+.disc{position:relative;width:min(37%,175px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#b7ffff 0%,#47daed 12%,#0d6479 37%,#092b3c 68%,#041720 100%);border:1px solid #9bfcff;box-shadow:0 0 17px #64edff,0 0 78px #24c5e65e,inset 0 0 32px #b0ffff77;transition:filter .5s,opacity .5s}
+.disc svg{width:46%;fill:none;stroke:#d5ffff;stroke-width:2;filter:drop-shadow(0 0 8px #8bf8ff)}
+.hl{position:absolute;width:min(100%,500px);height:1px;background:linear-gradient(90deg,transparent,#68ecf537 25%,transparent 40%,transparent 60%,#68ecf537 75%,transparent)}
+.hl.v{transform:rotate(90deg)}
+body[data-s=idle] .disc{filter:saturate(.55);opacity:.72}
+body[data-s=idle] .orb{animation-play-state:paused;opacity:.5}
+body[data-s=listening] .stage{--k:.6}
+body[data-s=thinking] .stage{--k:.2}
+body[data-s=thinking] .disc{filter:hue-rotate(200deg)}
+body[data-s=speaking] .stage{--k:.45}
+#cs{font:400 14px 'Space Mono',monospace;letter-spacing:.18em;color:#a8f5f6;margin:-14px 0 14px}
+.btn{border:1px solid #8ef4f9;background:linear-gradient(110deg,#2cc9d9,#96f7f8);color:#06202a;min-width:170px;padding:13px 22px;font:700 14px 'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 0 25px #3bdfed44}
+body:not([data-s=idle]) .btn{border-color:#ffaf79;background:var(--orange);color:#26140c;box-shadow:0 0 25px #ff9b5840}
+#heard{font:14px 'Space Mono',monospace;color:#80deea;min-height:20px;margin-top:16px}
+#ans{max-height:22vh;overflow:auto;font-size:16px;line-height:1.45;margin:8px 0 14px;max-width:560px}
+.send{display:flex;gap:8px;width:100%;max-width:520px}
+.send input{flex:1;min-width:0;background:#071720;border:1px solid #294b56;color:#e9f7f8;padding:11px;font:14px 'DM Sans',sans-serif}
+.send button{background:none;border:1px solid #29505b;color:var(--cyan);padding:0 16px;font:12px 'Space Mono',monospace}
+.chart{border:1px solid #294b56;background:#071720;padding:8px}
+canvas{width:100%;height:130px;display:block}
+.act{border-left:2px solid #33818d;padding:8px 0 8px 12px;color:#b9d2d9;font-size:12px;animation:in .35s both}
+.act:first-child{border-color:var(--orange)}
+.act time{display:block;color:var(--orange);font:10px 'Space Mono',monospace;margin-bottom:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:1000px){.dash{grid-template-columns:1fr 1fr}.center{grid-column:1/-1;grid-row:1}}
+@media(max-width:640px){.dash{grid-template-columns:1fr}.stage{min-height:340px}}
+</style>
+</head>
+<body data-s="idle">
+<div class="shell"><div class="page">
+<header>
+  <div>
+    <div class="eyebrow" style="color:var(--orange)">Interface de contrôle / 001</div>
+    <h1>MAESTRO BLACK</h1>
+    <p class="sub">Centre de commande · Assistant Gemini</p>
+  </div>
+  <div style="text-align:right">
+    <div class="eyebrow" style="color:var(--muted)">Heure locale</div>
+    <div id="clock">--:--:--</div>
+    <div class="mono" style="font-size:12px;color:#a9d0d7;margin-top:8px"><span class="dot"></span><span id="hs">EN VEILLE</span></div>
+    <button id="cfg">⚙ CLÉ API</button>
+  </div>
+</header>
+<div class="rule"></div>
+<main class="dash">
+  <aside>
+    <section class="panel">
+      <div class="top"><h2>Télémétrie</h2><span class="eyebrow">01 / SYS</span></div>
+      <div class="row">Traitement<output id="v-p">0%</output></div><div class="bar"><i id="b-p"></i></div>
+      <div class="row">Mémoire<output id="v-m">0%</output></div><div class="bar"><i id="b-m"></i></div>
+      <div class="row">Énergie<output id="v-e" style="color:#ffb27d">--</output></div><div class="bar o"><i id="b-e"></i></div>
+    </section>
+    <section class="panel">
+      <div class="top"><h2>État du système</h2></div>
+      <div class="grid2">
+        <div class="cell"><p class="eyebrow">Liaison</p><b id="net">--</b></div>
+        <div class="cell"><p class="eyebrow">Latence</p><b id="lat">-- ms</b></div>
+      </div>
+    </section>
+  </aside>
+
+  <section class="center">
+    <div class="eyebrow" style="color:#84cbd3">Noyau holographique / MB-01</div>
+    <div class="stage" id="stage">
+      <div class="hl"></div><div class="hl v"></div>
+      <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div>
+      <div class="disc"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="33" stroke-opacity=".55"/><path d="M22 60 39 33 50 54 61 33 78 60M28 68h44M50 15v12M50 73v12"/></svg></div>
+    </div>
+    <div id="cs">SYSTÈME EN VEILLE</div>
+    <button class="btn" id="btn">Parler</button>
+    <div id="heard"></div>
+    <div id="ans">Touchez le noyau ou « Parler », puis posez votre question.</div>
+    <div class="send"><input id="txt" placeholder="Ou écrivez ici…" autocomplete="off"><button id="go">ENVOYER</button></div>
+  </section>
+
+  <aside>
+    <section class="panel">
+      <div class="top"><h2>Signal en direct</h2><span class="eyebrow">02 / DATA</span></div>
+      <div class="chart"><canvas id="cv" height="130"></canvas></div>
+      <div class="row" style="margin-top:14px"><span style="color:#9ab5bf">Activité vocale</span><output id="fq" style="color:#ffb27d">0.0 Hz</output></div>
+    </section>
+    <section class="panel">
+      <div class="top"><h2>Flux d’activité</h2></div>
+      <div id="log" style="min-height:160px"></div>
+    </section>
+  </aside>
+</main>
+</div></div>
+
+<script>
+const URL_ = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent";
+const SYS = "Tu es BLACK, l’assistant du centre de commande MAESTRO. Tu es élégant, précis et légèrement pince-sans-rire. Réponds en français, en 1 à 3 phrases courtes, sans markdown ni listes.";
+const L = { idle: "SYSTÈME EN VEILLE", listening: "J’ÉCOUTE…", thinking: "ANALYSE EN COURS…", speaking: "RÉPONSE EN COURS" };
+const H = { idle: "EN VEILLE", listening: "ÉCOUTE", thinking: "ANALYSE", speaking: "RÉPONSE" };
+const $ = id => document.getElementById(id);
+let state = "idle", hist = [], rec = null, tick = 0, battery = null;
+
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+function getKey(force) {
+  let k = force ? null : store("gk");
+  if (!k) { k = (prompt("Collez votre clé API Gemini (aistudio.google.com) :") || "").trim(); if (k) store("gk", k); }
+  return k;
+}
+const time = () => new Date().toLocaleTimeString("fr-FR", { hour12: false });
+function add(msg) {
+  const e = document.createElement("div"), t = document.createElement("time");
+  e.className = "act"; t.textContent = time();
+  e.append(t, document.createTextNode(msg));
+  $("log").prepend(e);
+  while ($("log").children.length > 5) $("log").lastElementChild.remove();
+}
+function setState(s) {
+  state = s; document.body.dataset.s = s;
+  $("cs").textContent = L[s]; $("hs").textContent = H[s];
+  $("btn").textContent = s === "idle" ? "Parler" : "Arrêter";
+  $("fq").textContent = ({ idle: 0, listening: 1.8, thinking: 4.2, speaking: 2.4 })[s].toFixed(1) + " Hz";
+}
+
+async function ask(t) {
+  const key = getKey();
+  if (!key) return "Il me faut une clé API Gemini.";
+  hist.push({ role: "user", parts: [{ text: t }] });
+  const t0 = performance.now();
+  try {
+    const r = await fetch(URL_, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ system_instruction: { parts: [{ text: SYS }] }, contents: hist })
+    });
+    $("lat").textContent = Math.round(performance.now() - t0) + " ms";
+    if (!r.ok) {
+      hist.pop();
+      const bad = r.status === 400 || r.status === 403;
+      if (bad) store("gk", "");
+      return "Erreur Gemini " + r.status + (bad ? " : vérifiez votre clé (⚙)." : ".");
+    }
+    const j = await r.json();
+    const a = j.candidates[0].content.parts.map(p => p.text || "").join("").trim();
+    hist.push({ role: "model", parts: [{ text: a }] });
+    return a;
+  } catch (e) { hist.pop(); return "Connexion impossible."; }
+}
+
+function speak(a) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(a.replace(/[*#_`]/g, ""));
+  u.lang = "fr-FR";
+  u.onstart = () => setState("speaking");
+  u.onend = u.onerror = () => { setState("idle"); add("Réponse terminée."); };
+  speechSynthesis.speak(u);
+}
+async function think(t) {
+  $("heard").textContent = "> " + t;
+  add("Requête : " + (t.length > 60 ? t.slice(0, 57) + "…" : t));
+  setState("thinking");
+  const a = await ask(t);
+  $("ans").textContent = a;
+  add("Réponse reçue de Gemini.");
+  speak(a);
+}
+
+function listen() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { $("ans").textContent = "Reconnaissance vocale indisponible : utilisez Chrome, ou écrivez en bas."; return; }
+  if (!getKey()) return;
+  let final = "";
+  rec = new SR(); rec.lang = "fr-FR"; rec.interimResults = true;
+  rec.onstart = () => { setState("listening"); $("heard").textContent = ""; add("Micro activé."); };
+  rec.onresult = e => {
+    let t = ""; for (const r of e.results) t += r[0].transcript;
+    $("heard").textContent = "> " + t;
+    if (e.results[e.results.length - 1].isFinal) final = t;
+  };
+  rec.onerror = ev => { add("Micro : " + ev.error); setState("idle"); };
+  rec.onend = () => { if (final) think(final); else if (state === "listening") setState("idle"); };
+  rec.start();
+}
+function toggle() {
+  if (state === "idle") listen();
+  else { speechSynthesis.cancel(); if (rec) { rec.onend = null; rec.abort(); } setState("idle"); add("Interrompu."); }
+}
+$("btn").onclick = $("stage").onclick = toggle;
+$("cfg").onclick = () => getKey(true);
+function sendTxt() { const t = $("txt").value.trim(); if (t && state === "idle" && getKey()) { $("txt").value = ""; think(t); } }
+$("go").onclick = sendTxt;
+$("txt").onkeydown = e => { if (e.key === "Enter") sendTxt(); };
+
+function level(n, v) { $("v-" + n).textContent = Math.round(v) + "%"; $("b-" + n).style.width = v + "%"; }
+function metrics() {
+  level("p", state === "thinking" ? 88 : state === "idle" ? 12 : 45);
+  level("m", Math.min(95, 8 + hist.length * 6));
+  if (battery) level("e", battery.level * 100); else { $("v-e").textContent = "N/D"; $("b-e").style.width = "100%"; }
+  $("net").textContent = navigator.onLine ? "STABLE" : "HORS LIGNE";
+}
+if (navigator.getBattery) navigator.getBattery().then(b => { battery = b; metrics(); });
+
+const cv = $("cv"), g = cv.getContext("2d");
+function draw() {
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = Math.max(1, cv.getBoundingClientRect().width), h = 130;
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = h * dpr; }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  g.strokeStyle = "#25434b"; g.lineWidth = 1;
+  for (let y = 20; y < h; y += 30) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+  for (let x = 20; x < w; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
+  const amp = ({ idle: 3, listening: 16, thinking: 22, speaking: 19 })[state], sp = state === "thinking" ? .5 : .3;
+  g.beginPath();
+  for (let x = 0; x <= w; x += 2) {
+    const p = x / w * 14, y = h / 2 + Math.sin(p * 2.2 + tick * sp) * amp + Math.sin(p * 5 - tick * .23) * amp * .4;
+    x ? g.lineTo(x, y) : g.moveTo(x, y);
+  }
+  g.shadowBlur = 15; g.shadowColor = "#60ebf5"; g.strokeStyle = "#6cecf3"; g.lineWidth = 2; g.stroke(); g.shadowBlur = 0;
+}
+setInterval(() => { $("clock").textContent = time(); metrics(); }, 1000);
+(function loop() { tick++; draw(); requestAnimationFrame(loop); })();
+setState("idle"); metrics(); add("Système prêt.");
+</script>
+</body>
+</html>
