@@ -138,7 +138,8 @@ canvas{width:100%;height:130px;display:block}
 </div></div>
 
 <script>
-const URL_ = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent";
+const MODELS = ["gemini-3.5-flash-lite", "gemini-3.7-flash"];
+const url = m => "https://generativelanguage.googleapis.com/v1beta/models/" + m + ":generateContent";
 const SYS = "Tu es BLACK, l’assistant du centre de commande MAESTRO. Tu es élégant, précis et légèrement pince-sans-rire. Réponds en français, en 1 à 3 phrases courtes, sans markdown ni listes.";
 const L = { idle: "SYSTÈME EN VEILLE", listening: "J’ÉCOUTE…", thinking: "ANALYSE EN COURS…", speaking: "RÉPONSE EN COURS" };
 const H = { idle: "EN VEILLE", listening: "ÉCOUTE", thinking: "ANALYSE", speaking: "RÉPONSE" };
@@ -171,24 +172,26 @@ async function ask(t) {
   if (!key) return "Il me faut une clé API Gemini.";
   hist.push({ role: "user", parts: [{ text: t }] });
   const t0 = performance.now();
-  try {
-    const r = await fetch(URL_, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({ system_instruction: { parts: [{ text: SYS }] }, contents: hist })
-    });
-    $("lat").textContent = Math.round(performance.now() - t0) + " ms";
-    if (!r.ok) {
-      hist.pop();
-      const bad = r.status === 400 || r.status === 403;
-      if (bad) store("gk", "");
-      return "Erreur Gemini " + r.status + (bad ? " : vérifiez votre clé (⚙)." : ".");
-    }
-    const j = await r.json();
-    const a = j.candidates[0].content.parts.map(p => p.text || "").join("").trim();
-    hist.push({ role: "model", parts: [{ text: a }] });
-    return a;
-  } catch (e) { hist.pop(); return "Connexion impossible."; }
+  let last = "Erreur Gemini.";
+  for (const m of MODELS) {
+    try {
+      const r = await fetch(url(m), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({ system_instruction: { parts: [{ text: SYS }] }, contents: hist, generationConfig: { maxOutputTokens: 400, temperature: 0.7 } })
+      });
+      $("lat").textContent = Math.round(performance.now() - t0) + " ms";
+      if (r.status === 400 || r.status === 403) { hist.pop(); store("gk", ""); return "Erreur Gemini " + r.status + " : vérifiez votre clé (⚙)."; }
+      if (!r.ok) { last = "Erreur Gemini " + r.status + "."; continue; }
+      const j = await r.json();
+      const a = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim();
+      if (!a) { last = "Réponse vide."; continue; }
+      hist.push({ role: "model", parts: [{ text: a }] });
+      return a;
+    } catch (e) { last = "Connexion impossible."; }
+  }
+  hist.pop();
+  return last;
 }
 
 function speak(a) {
